@@ -1,160 +1,288 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>Polaroid App</title>
-    <link rel="stylesheet" href="polaroid.css">
-    <link href="https://fonts.googleapis.com/css?family=Permanent+Marker" rel="stylesheet">
-  </head>
-  <body>
-    <!-- page content -->
-      
-    <h1 id="title">POLAROID GALLERY</h1>
-      
-    <p align="center">hover over the polaroids to develop the images!</p>
-      
-      
-      <div id="table-container" style="overflow-x: auto;">
-          <table id="table">
-              <tr>
-                  <td>
-                      
-                      <div class="polaroidstyle polaroid-body1 shake zoom">
-                            <div class="pic-container">
-                             <img class="pic-gallery pic1 cover" src="img/paris.jpg" alt="image-holder">
+<html>
 
-                            </div>
+<canvas id="gameBox" width="1000" height="600";></canvas>
 
-                            <div id="caption">
-                            Paris
-                          <p id="date">Andrea Maschio</p>
-                            </div>
-                       </div>
-                  </td>
-                  <td>
-                      
-                      <div class="polaroidstyle polaroid-body2 shake zoom">
-                              <div class="pic-container">
-                                  <img class="pic-gallery pic2 cover" src="img/lahore.jpg" alt="image-holder2">
 
-                              </div>
+	<style>
+	
+	#gamebox {
+	
+		border: 20px solid white;
+		
+		outline: 10px solid black;
+	
+	}
+	
+	</style>
 
-                              <div id="caption">
-                                     Lahore
-                                  <p id="date">Hussain Ibrahim</p>
-                              </div> 
-                        </div>
-                  </td>
-                  <td>
 
-                      <div class="polaroidstyle polaroid-body3 shake zoom">
-                              <div class="pic-container">
-                                  <img class="pic-gallery pic3 cover" src="img/nyc_dorianmongel.jpg" alt="image-holder3">
 
-                              </div>
+	<script>
+	
+	// GAME VARIABLES
+	
+	var canvas;
+	var canvasContext;
+	var ballX = 50;
+	var ballY = 50;
+	var ballSpeedX = 10;
+	var ballSpeedY = 5;
+	
+	var player1score = 0;
+	var player2score = 0;
+	const WINNING_SCORE = 3;
+	
+	var showingWinScreen = false;
+	
+	var paddle1Y = 250;
+	const PADDLE_HEIGHT = 100;
+	var paddle2Y = 250;
+	const PADDLE_THICKNESS = 10;
+	
+	function calculateMousePos(evt) {
+	
+		var rect = canvas.getBoundingClientRect();
+		var root = document.documentElement;
+		var mouseX = evt.clientX - rect.left - root.scrollLeft;
+		var mouseY = evt.clientY - rect.top - root.scrollTop;
+	
+		return {
+		
+			x:mouseX,
+			y:mouseY
+		
+		};
+	
+	
+	}
+	
+	
+	
+	function handleMouseClick(evt){
+	
+		if (showingWinScreen){
+		
+			player1score = 0;
+			player2score = 0;
+			showingWinScreen = false;
+		
+		}
+	
+	}
+	
+	
+	// RUN OUR CODE WHEN THE PAGE LOADS
+	
+	window.onload = function(){
+		console.log("Hello Gaming World!"); 
+		
+		// DISPLAY CANVAS
+		canvas = document.getElementById('gameBox');
+		// 
+		canvasContext = canvas.getContext('2d');
+		// DRAW THE CANVAS
+		drawEverything();
+		
+		//
+		var framesPerSecond = 30;
 
-                              <div id="caption">
-                                    NYC
-                                  <p id="date">Dorian Mongel</p>
-                              </div> 
-                        </div>
-                  </td>
-              </tr>
-              <tr>
-                  <td>
+		// SET THE TIMER FOR SMOOTH GAMEPLAY
+		setInterval(function(){
+		
+		moveEverything();
+		drawEverything();
+		
+		}, 1000/framesPerSecond);
+		
+		
+		canvas.addEventListener('mousedown', handleMouseClick);
+		
+		
+		canvas.addEventListener('mousemove',
+		
+			function(evt){
+			
+				var mousePos = calculateMousePos(evt);
+				paddle1Y = mousePos.y-(PADDLE_HEIGHT/2);
+			
+			});
+		
+		
+		}
+		
+		
+	function ballReset() {
+	
+		if(player1score >= WINNING_SCORE || 
+		   player2score >= WINNING_SCORE) {
+		    player1score = 0;
+		    player2score = 0;
+			showingWinScreen = true;
+		   }
+	
+	
+		ballSpeedX = -ballSpeedX;
+		ballX = canvas.width/2;
+		ballY = canvas.height/2;
+	
+	}
+		
+		
+	function computerMovement(){
+		var paddle2YCenter = paddle2Y + (PADDLE_HEIGHT/2);
+		if(paddle2YCenter < ballY-35) {
+		
+			paddle2Y += 6;
+		
+		} else if (paddle2YCenter > ballY+35) {
+		
+			paddle2Y -= 6;
+		
+		}
+	
+	}	
+		
+	
+	function moveEverything(){
+	
+		if(showingWinScreen){
+		
+			return;
+		
+		}
+		computerMovement();
+		// EVERYTIME THE FUNCTION RUNS, ADD 5 TO IT'S POSITION
+		ballX += ballSpeedX;
+		ballY += ballSpeedY;
+		
+		if (ballX < 0) {
+		
+			if(ballY > paddle1Y && 
+				ballY < paddle1Y+PADDLE_HEIGHT) {
+				ballSpeedX = -ballSpeedX;
+				
+				var deltaY = ballY
+					-(paddle1Y+PADDLE_HEIGHT/2);
+				ballSpeedY = deltaY * 0.35;
+				
+				
+				} else {
+		
+			
+			player2score ++;
+			ballReset();
+			}
+			
+		}
+		
+		if (ballX > canvas.width) {
+		
+			if(ballY > paddle2Y && 
+				ballY < paddle2Y+PADDLE_HEIGHT) {
+				ballSpeedX = -ballSpeedX;
+				
+				var deltaY = ballY
+					-(paddle2Y+PADDLE_HEIGHT/2);
+				ballSpeedY = deltaY * 0.35;
+				
+				} else {
+		
+			player1score ++;
+			ballReset();
+			
+			}  
+		
+		}
+		if (ballY < 0) {
+		
+			ballSpeedY = -ballSpeedY; 
+		}
+		
+		if (ballY > canvas.height) {
+		
+			ballSpeedY = -ballSpeedY;  
+		}
+	
+	};
+		
+		
+	function drawNet() {
+	
+		for(var i=0;i<canvas.height; i+=40){
+		
+			colorRect(canvas.width/2-1,i,2,35, 'white');
+			
+		}
+	
+	}	
+	
+		
+		
+		
+	function drawEverything(){
+	
+		
+	
+		// CANVAS POSITION(x, y, x2, y2)
+		colorRect(0,0,canvas.width, canvas.height,'green');
+		
+		drawNet();
 
-                      <div class="polaroidstyle polaroid-body4 shake zoom">
-                            <div class="pic-container">
+		if(showingWinScreen){
+		
+			canvasContext.fillStyle = 'white';
+		
+			if(player1score >= WINNING_SCORE) {
+			
+			canvasContext.fillText("Left Player Won!", 350, 200);
+			
+			} else if(player2score >= WINNING_SCORE){
+			
+			canvasContext.fillText("Right Player Won!", 350, 200);
+			
+			}
+		
+		
+			
+			canvasContext.fillText("Click to continue", 450, 300);
+			return;
+		}
+		
 
-                             <img class="pic-gallery pic4 cover" src="img/amsterdam_cedricklei.jpg" alt="image-holder">
+		// left player paddle
+		colorRect(0,paddle1Y,PADDLE_THICKNESS,PADDLE_HEIGHT, 'black');
+		
+		// right player paddle
+		colorRect(canvas.width-PADDLE_THICKNESS,paddle2Y,PADDLE_THICKNESS,PADDLE_HEIGHT, 'black');
+		
+		// BALL POSITION(x, y, x2, y2)
+		colorCircle(ballX, ballY, 10, 'white');
+		// PADDLE COLOR
+		
+		canvasContext.fillText(player1score, 100,100);
+		canvasContext.fillText(player2score, canvas.width-100,100);
+	}
+	
+	
+	function colorCircle(centerX, centerY, radius, drawColor){
+	
+		canvasContext.fillStyle = drawColor;
+		canvasContext.beginPath();
+		canvasContext.arc(centerX, centerY, radius, 0, Math.PI*2, true);
+		canvasContext.fill();
+	
+	}
+	
+	
+	
+	function colorRect(leftX,topY, width, height, drawColor){
+	
+		canvasContext.fillStyle = drawColor;
+		canvasContext.fillRect(leftX,topY, width, height);
+	
+	
+	}
+	
+	</script>
 
-                            </div>
-
-                            <div id="caption">
-                            Amsterdam
-                          <p id="date">Cedric Klei</p>
-                            </div>
-                       </div>
-                  </td>
-                  <td>
-
-                      <div class="polaroidstyle polaroid-body5 shake zoom">
-                              <div class="pic-container">
-                                  <img class="pic-gallery pic5 cover" src="img/tokyo_dilassi.jpg" alt="image-holder2">
-
-                              </div>
-
-                              <div id="caption">
-                                    Tokyo
-                                  <p id="date">Dil Assi</p>
-                              </div> 
-                        </div>
-                  </td>
-                  <td>
-
-                      <div class="polaroidstyle polaroid-body6 shake zoom">
-                              <div class="pic-container">
-                                  <img class="pic-gallery pic6 cover" src="img/kandersteg_pascaldebrunner.jpg" alt="image-holder3">
-
-                              </div>
-
-                              <div id="caption">
-                                    Kandersteg
-                                  <p id="date">Pascal Debrunner</p>
-                              </div> 
-                        </div>
-                  </td>
-              </tr>
-              <tr>
-                  <td>
-
-                      <div class="polaroidstyle polaroid-body7 shake zoom">
-                            <div class="pic-container">
-
-                             <img class="pic-gallery pic7 cover" src="img/kazan_daniilsilantev.jpg" alt="image-holder">
-
-                            </div>
-
-                            <div id="caption">
-                            Kazan
-                          <p id="date">Daniil Silantev</p>
-                            </div>
-                       </div>
-                  </td>
-                  <td>
-
-                      <div class="polaroidstyle polaroid-body8 shake zoom">
-                              <div class="pic-container">
-                                  <img class="pic-gallery pic8 cover" src="img/london_lukestackpoole.jpg" alt="image-holder2">
-
-                              </div>
-
-                              <div id="caption">
-                                    London
-                                  <p id="date">Luke Stackpoole</p>
-                              </div> 
-                        </div>
-                  </td>
-                  <td>
-
-                      <div class="polaroidstyle polaroid-body9 shake zoom">
-                              <div class="pic-container">
-                                  <img class="pic-gallery pic9 cover" src="img/venice_ricardogomezangel.jpg" alt="image-holder3">
-
-                              </div>
-
-                              <div id="caption">
-                                    Venice
-                                  <p id="date">Ricardo G. Angel</p>
-                              </div> 
-                        </div>
-                  </td>
-              </tr>
-          </table>
-      </div>
-      
-      <script src="js/jquery.js"></script>
-      <script src="js/polaroid.js"></script>
-      
-  </body>
 </html>
